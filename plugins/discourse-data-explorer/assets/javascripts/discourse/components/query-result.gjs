@@ -4,7 +4,9 @@ import { action } from "@ember/object";
 import { schedule } from "@ember/runloop";
 import { service } from "@ember/service";
 import { capitalize } from "@ember/string";
+import moment from "moment";
 import DButton from "discourse/components/d-button";
+import icon from "discourse/helpers/d-icon";
 import { ajax } from "discourse/lib/ajax";
 import getURL from "discourse/lib/get-url";
 import Badge from "discourse/models/badge";
@@ -157,6 +159,15 @@ export default class QueryResult extends Component {
   get duration() {
     return i18n("explorer.run_time", {
       value: I18n.toNumber(this.args.content.duration, { precision: 1 }),
+    });
+  }
+
+  get cachedResultNotice() {
+    if (!this.args.cachedAt) {
+      return null;
+    }
+    return i18n("explorer.cached_result_notice", {
+      relative_time: moment(this.args.cachedAt).fromNow(),
     });
   }
 
@@ -370,6 +381,12 @@ export default class QueryResult extends Component {
           {{this.resultCount}}
           {{this.duration}}
         </div>
+        {{#if this.cachedResultNotice}}
+          <div class="cached-result-notice">
+            {{icon "clock-rotate-left"}}
+            {{this.cachedResultNotice}}
+          </div>
+        {{/if}}
 
         <br />
 
