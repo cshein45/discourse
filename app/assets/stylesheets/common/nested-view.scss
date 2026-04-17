@@ -267,8 +267,8 @@
   // Avatar size for the "small" PostAvatar used in nested posts.
   // Used to calculate horizontal connector positions.
   --nested-avatar-size: 24px;
-  --nested-column-gap: 8px;
-  --nested-connector-offset: 8px;
+  --nested-column-gap: var(--space-2);
+  --nested-connector-offset: var(--space-2);
   --nested-vertical-gap: 0.5em;
   --nested-hook-width: calc(var(--nested-avatar-size) / 2);
   --nested-line-offset: calc(
@@ -402,7 +402,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    min-height: 8px;
+    min-height: var(--space-2);
 
     &::after {
       content: "";
@@ -520,7 +520,7 @@
   &__header {
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    gap: 0.25em;
 
     // Hide the reply-to line, as the lines between posts already visually indicate the reply structure
     .reply-to-tab {
@@ -529,11 +529,18 @@
 
     .topic-meta-data {
       display: contents;
+
+      .names {
+        flex: none;
+        margin-right: 0;
+      }
     }
 
     .post-infos {
-      margin-left: auto;
       order: 1;
+      font-size: var(--font-down-2);
+      color: var(--primary-medium);
+      transform: translateY(1px); // optical alignment with username baseline
     }
 
     // Read state was all whacky, this makes it nice.
@@ -544,14 +551,18 @@
   }
 
   &__op-badge {
+    display: flex;
+    align-items: center;
     font-size: var(--font-down-2);
+    line-height: var(--line-height-small);
     font-weight: bold;
     color: var(--tertiary);
     background: var(--tertiary-very-low);
     border: 1px solid var(--tertiary-low);
     border-radius: var(--d-border-radius);
     padding: 0.1em 0.4em;
-    line-height: 1;
+    margin: 0.25em 0.25em 0.25em 0;
+    transform: translateY(1px);
   }
 
   &__pinned-badge {
@@ -899,7 +910,7 @@
     // can resolve -1 to the end of the explicit grid (line 3).
     // Without this, -1 falls back to line 1 and the gutter only spans row 1.
     grid-template-rows: auto 1fr;
-    column-gap: 4px;
+    column-gap: var(--space-1);
 
     // Tighter vertical spacing between siblings
     --nested-vertical-gap: 0.25em;
