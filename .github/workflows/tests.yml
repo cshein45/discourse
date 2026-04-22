@@ -88,6 +88,13 @@ jobs:
             build_type: system
 
     steps:
+      - name: Enable jemalloc
+        run: echo /usr/lib/libjemalloc.so.1 > /etc/ld.so.preload
+
+      - name: Verify jemalloc is loaded into Ruby
+        run: |
+          ruby -e 'abort "jemalloc not loaded" unless File.read("/proc/self/maps").include?("libjemalloc")'
+
       - name: Set working directory owner
         run: chown root:root .
 
