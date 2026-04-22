@@ -1,10 +1,10 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
-import { concat } from "@ember/helper";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
-import DButton from "discourse/components/d-button";
+import DMenu from "discourse/float-kit/components/d-menu";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { i18n } from "discourse-i18n";
 import { castVote, removeVote } from "../lib/post-voting-utilities";
 import PostVotingButton from "./post-voting-button";
 import PostVotingWhoVotedList from "./post-voting-who-voted-list";
@@ -13,7 +13,6 @@ export default class PostVotingVoteControls extends Component {
   @service currentUser;
 
   @tracked loading;
-  @tracked showWhoVoted = false;
 
   get count() {
     return this.args.post_voting_vote_count || 0;
@@ -101,11 +100,6 @@ export default class PostVotingVoteControls extends Component {
     }
   }
 
-  @action
-  toggleWhoVoted() {
-    this.showWhoVoted = !this.showWhoVoted;
-  }
-
   <template>
     <div class="post-voting-post">
       <PostVotingButton
@@ -118,19 +112,23 @@ export default class PostVotingVoteControls extends Component {
       />
 
       {{#if this.hasVotes}}
-        <DButton
-          class="post-voting-post-toggle-voters btn-flat"
-          @action={{this.toggleWhoVoted}}
-          @translatedLabel={{concat @post.post_voting_vote_count}}
-        />
-        {{#if this.showWhoVoted}}
-          <PostVotingWhoVotedList
-            @post={{@post}}
-            @onClickOutside={{this.toggleWhoVoted}}
-          />
-        {{/if}}
+        <DMenu
+          @identifier="post-voting-popup"
+          @interactive={{true}}
+          @autofocus={{true}}
+          @title={{i18n "vote.toggle_voters"}}
+          @ariaLabel={{i18n "vote.toggle_voters"}}
+          @triggerClass="post-voting-post__toggle-voters btn-transparent"
+        >
+          <:trigger>
+            {{@post.post_voting_vote_count}}
+          </:trigger>
+          <:content>
+            <PostVotingWhoVotedList @post={{@post}} />
+          </:content>
+        </DMenu>
       {{else}}
-        <span class="post-voting-post-toggle-voters">
+        <span class="post-voting-post__toggle-voters">
           {{this.count}}
         </span>
       {{/if}}
