@@ -13,7 +13,9 @@ import { isNone } from "@ember/utils";
 import SettingValidationMessage from "discourse/admin/components/setting-validation-message";
 import Description from "discourse/admin/components/site-settings/description";
 import JobStatus from "discourse/admin/components/site-settings/job-status";
-import SiteSetting from "discourse/admin/models/site-setting";
+import SiteSetting, {
+  isSettingValueTrue,
+} from "discourse/admin/models/site-setting";
 import DButton from "discourse/components/d-button";
 import JsonSchemaEditorModal from "discourse/components/modal/json-schema-editor";
 import PluginOutlet from "discourse/components/plugin-outlet";
@@ -62,6 +64,7 @@ const CUSTOM_TYPES = [
 export default class SiteSettingComponent extends Component {
   @service modal;
   @service router;
+  @service adminSiteSettingStore;
   @service siteSettingChangeTracker;
   @service messageBus;
   @service site;
@@ -361,7 +364,23 @@ export default class SiteSettingComponent extends Component {
   }
 
   get isDisabled() {
-    return this.setting.themeable || this.setting.disabled;
+    return (
+      this.setting.themeable ||
+      this.setting.disabled ||
+      this.isDisabledByDependency
+    );
+  }
+
+  get isDisabledByDependency() {
+    if (this.setting.depends_behavior !== "hidden") {
+      return false;
+    }
+    return (
+      this.setting.depends_on?.some((name) => {
+        const parent = this.adminSiteSettingStore.get(name);
+        return parent && !isSettingValueTrue(parent.buffered.get("value"));
+      }) ?? false
+    );
   }
 
   get canUpdate() {
@@ -433,6 +452,9 @@ export default class SiteSettingComponent extends Component {
   @action
   changeValueCallback(value) {
     this.buffered.set("value", value);
+    if (isSettingValueTrue(value)) {
+      this.adminSiteSettingStore.reveal(this.setting.setting);
+    }
   }
 
   @action
@@ -450,6 +472,9 @@ export default class SiteSettingComponent extends Component {
   resetDefault() {
     this.buffered.set("value", this.setting.default);
     this.setting.validationMessage = null;
+    if (isSettingValueTrue(this.setting.default)) {
+      this.adminSiteSettingStore.reveal(this.setting.setting);
+    }
   }
 
   @action
@@ -493,7 +518,8 @@ export default class SiteSettingComponent extends Component {
       class="row setting
         {{this.typeClass}}
         {{if this.overridden 'overridden'}}
-        {{if this.isDisabled 'disabled'}}"
+        {{if this.isDisabled 'disabled'}}
+        {{if this.isDisabledByDependency 'disabled-by-dependency'}}"
       ...attributes
     >
       <div class="setting-label">
